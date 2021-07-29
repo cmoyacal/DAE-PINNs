@@ -21,12 +21,14 @@ def main(args):
 
     # enabling gpu training
     use_cuda = not args.no_cuda and torch.cuda.is_available()
-    cuda_str = "cuda:" + str(args.gpu_number)
-    device = torch.device(cuda_str if use_cuda else "cpu")
+    # cuda_str = "cuda:" + str(args.gpu_number)
+    device = torch.device("cuda" if use_cuda else "cpu")
+    torch.cuda.set_device(1)
+    print("device_num...", torch.cuda.current_device())
     print("using...", device)
 
     # list of widths
-    width = [10, 100, 200, 500, 1000]
+    width = [10, 50, 100, 200, 500, 1000]
     train_width = np.empty((len(width),))
     test_width = np.empty((len(width),))
 
@@ -82,6 +84,7 @@ def main(args):
         return torch.nn.functional.softplus(x)
 
     for k in range(len(width)):
+        print("current width...", width[k])
         X_train = geom.random_points(args.num_train)
         X_test = geom.random_points(args.num_test)
         data = dae_data(X_train, X_test, args, device=device, func=power_net_dae)
@@ -101,7 +104,8 @@ def main(args):
         else:
             dim_out = dynamic.num_IRK_stages + 1
 
-            dynamic.layer_size = [dynamic.state_dim] + [width[k]] * args.dyn_depth + [dim_out]
+        
+        dynamic.layer_size = [dynamic.state_dim] + [width[k]] * args.dyn_depth + [dim_out]
 
         algebraic = dotdict()
         algebraic.num_IRK_stages = args.num_IRK_stages
@@ -172,37 +176,37 @@ if __name__ == "__main__":
 
     # general
     parser.add_argument('--num-IRK-stages', type=int, default=100, help="number of RK stages")
-    parser.add_argument('--log-dir', type=str, default="./logs/dae-pinns-width-analysis/", help="log dir")
+    parser.add_argument('--log-dir', type=str, default="./logs/dae-pinns-width-analysis-boole/", help="log dir")
     parser.add_argument('--no-cuda', action='store_true', default=False, help="disable cuda training")
     parser.add_argument('--gpu-number', type=int, default=0, help="GPU device number")
-    parser.add_argument('--num-train', type=int, default=500, help="number of training examples")
+    parser.add_argument('--num-train', type=int, default=100, help="number of training examples")
     parser.add_argument('--num-val', type=int, default=100, help="number of validation examples")
-    parser.add_argument('--num-test', type=int, default=500, help="number of test examples")
+    parser.add_argument('--num-test', type=int, default=200, help="number of test examples")
 
     # scheduler
     parser.add_argument('--use-scheduler', action='store_true', default=False, help='use lr scheduler')
     parser.add_argument('--scheduler-type', type=str, default="plateau", help="scheduler type")
-    parser.add_argument('--patience', type=int, default=2500, help="patience for scheduler")
+    parser.add_argument('--patience', type=int, default=2000, help="patience for scheduler")
     parser.add_argument('--factor', type=float, default=.8, help="factor for scheduler")
 
     # optimizer
     parser.add_argument('--use-tqdm', action='store_true', default=False, help="disable tqdm for training")
     parser.add_argument('--lr', type=float, default=1e-3, help="learning rate")
-    parser.add_argument('--epochs', type=int, default=100000, help="number of epochs")
-    parser.add_argument('--batch-size', type=int, default=100, help="batch size")
+    parser.add_argument('--epochs', type=int, default=50000, help="number of epochs")
+    parser.add_argument('--batch-size', type=int, default=1000, help="batch size")
     parser.add_argument('--test-every', type=int, default=1000, help="test and log every * steps")
 
     # NNs
-    parser.add_argument('--dyn-type', type=str, default="fnn", help="type of dyn-vars net \in {fnn, attention, Conv1D}")
+    parser.add_argument('--dyn-type', type=str, default="attention", help="type of dyn-vars net \in {fnn, attention, Conv1D}")
     parser.add_argument('--unstacked', action='store_true', default=False, help="use unstaked neural nets for the dynamic variables")
     parser.add_argument('--dyn-activation', type=str, default="sin", help="dynamic variables activation function")
     parser.add_argument('--dyn-weight', type=float, default=1.0, help="weight for dynamic residual loss")
-    parser.add_argument('--dyn-depth', type=int, default=2, help="depth of hidden layers - dynamic variables")
+    parser.add_argument('--dyn-depth', type=int, default=5, help="depth of hidden layers - dynamic variables")
 
-    parser.add_argument('--alg-type', type=str, default="fnn", help="type of alg-vars net \in {fnn, attention, Conv1D}")
+    parser.add_argument('--alg-type', type=str, default="attention", help="type of alg-vars net \in {fnn, attention, Conv1D}")
     parser.add_argument('--alg-activation', type=str, default="sin", help="algebraic variables activation function")
     parser.add_argument('--alg-weight', type=float, default=1.0, help="weight for algebraic residual loss")
-    parser.add_argument('--alg-depth', type=int, default=2, help="depth of hidden layers - algebraic variables")
+    parser.add_argument('--alg-depth', type=int, default=3, help="depth of hidden layers - algebraic variables")
     parser.add_argument('--alg-width', type=int, default=100, help="width of hidden layers - algebraic variables")
 
     # integration 

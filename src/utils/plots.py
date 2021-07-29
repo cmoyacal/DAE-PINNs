@@ -183,6 +183,10 @@ def plot_barchart(train, test, fname="./log/regression.png", size=20, figsize=(8
     mean_test = test.mean(axis=0)
     error_train = train.std(axis=0)
     error_test = test.std(axis=0)
+    print("mean train...", mean_train)
+    print("mean_test...", mean_test)
+    print("error_train...", error_train)
+    print("error_test...", error_test)
     width = .25
 
     x = np.arange(len(mean_train))

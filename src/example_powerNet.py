@@ -42,9 +42,12 @@ def main(args):
 
     # enabling gpu training
     use_cuda = not args.no_cuda and torch.cuda.is_available()
-    cuda_str = "cuda:" + str(args.gpu_number)
-    device = torch.device(cuda_str if use_cuda else "cpu")
+    #cuda_str = "cuda:" + str(args.gpu_number)
+    device = torch.device("cuda" if use_cuda else "cpu")
+    torch.cuda.set_device(1)
+    print(torch.cuda.current_device())
     print("using...", device)
+    print(torch.cuda.current_device())
 
     # construct the neural nets
     dynamic = dotdict()
@@ -280,8 +283,8 @@ if __name__ == "__main__":
     parser.add_argument('--no-cuda', action='store_true', default=False, help="disable cuda training")
     parser.add_argument('--gpu-number', type=int, default=0, help="GPU device number")
     parser.add_argument('--num-train', type=int, default=1000, help="number of training examples")
-    parser.add_argument('--num-val', type=int, default=400, help="number of validation examples")
-    parser.add_argument('--num-test', type=int, default=200, help="number of test examples")
+    parser.add_argument('--num-val', type=int, default=200, help="number of validation examples")
+    parser.add_argument('--num-test', type=int, default=400, help="number of test examples")
     parser.add_argument('--num-plot', type=int, default=1, help="number of ICs for plotting")
 
     # scheduler
@@ -293,7 +296,7 @@ if __name__ == "__main__":
     # optimizer
     parser.add_argument('--use-tqdm', action='store_true', default=False, help="disable tqdm for training")
     parser.add_argument('--lr', type=float, default=1e-3, help="learning rate")
-    parser.add_argument('--epochs', type=int, default=50000, help="number of epochs")
+    parser.add_argument('--epochs', type=int, default=100000, help="number of epochs")
     parser.add_argument('--batch-size', type=int, default=100, help="batch size")
     parser.add_argument('--test-every', type=int, default=1000, help="test and log every * steps")
     parser.add_argument('--start-from-best', action='store_true', default=False, help='start from best model so far')

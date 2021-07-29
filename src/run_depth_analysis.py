@@ -21,12 +21,15 @@ def main(args):
 
     # enabling gpu training
     use_cuda = not args.no_cuda and torch.cuda.is_available()
-    cuda_str = "cuda:" + str(args.gpu_number)
-    device = torch.device(cuda_str if use_cuda else "cpu")
+    #cuda_str = "cuda:" + str(args.gpu_number)
+    device = torch.device("cuda" if use_cuda else "cpu")
+    torch.cuda.set_device(1)
+    print(torch.cuda.current_device())
     print("using...", device)
+    print(torch.cuda.current_device())
 
     # list of depths
-    depth = [1, 2, 3, 4, 5]
+    depth = [2, 5, 7]
     train_depth = np.empty((len(depth),))
     test_depth = np.empty((len(depth),))
 
@@ -76,12 +79,13 @@ def main(args):
         return [f0, f1, f2, f3], [g]
 
     # get data for the problem
-    geom = dde.geometry.Hypercube([-.5, -.5, -.5, -.5],[.5, .5, .5, .5])
+    geom = dde.geometry.Hypercube([-.25, -.25, -.25, -.25],[.25, .25, .25, .25])
 
     def alg_output_feature_layer(x):
         return torch.nn.functional.softplus(x)
 
     for k in range(len(depth)):
+        print("depth...", depth[k])
         X_train = geom.random_points(args.num_train)
         X_test = geom.random_points(args.num_test)
         data = dae_data(X_train, X_test, args, device=device, func=power_net_dae)
@@ -98,6 +102,8 @@ def main(args):
         if args.unstacked:
         # if NNs for dynamic states are unstaked
             dim_out = dynamic.state_dim * (dynamic.num_IRK_stages + 1)
+
+            dynamic.layer_size = [dynamic.state_dim] + [args.dyn_width] * depth[k] + [dim_out]
         else:
             dim_out = dynamic.num_IRK_stages + 1
 
@@ -106,7 +112,7 @@ def main(args):
         algebraic = dotdict()
         algebraic.num_IRK_stages = args.num_IRK_stages
         dim_out_alg = algebraic.num_IRK_stages + 1
-        algebraic.layer_size = [dynamic.state_dim] + [args.alg_width] * depth[k] + [dim_out_alg]
+        algebraic.layer_size = [dynamic.state_dim] + [args.alg_width] * 2  + [dim_out_alg]
         algebraic.activation = args.alg_activation
         algebraic.initializer = "Glorot normal"
         algebraic.dropout_rate = 0.0
@@ -172,24 +178,24 @@ if __name__ == "__main__":
 
     # general
     parser.add_argument('--num-IRK-stages', type=int, default=100, help="number of RK stages")
-    parser.add_argument('--log-dir', type=str, default="./logs/dae-pinns-depth-analysis/", help="log dir")
+    parser.add_argument('--log-dir', type=str, default="./logs/dae-pinns-depth-analysis-boole-03/", help="log dir")
     parser.add_argument('--no-cuda', action='store_true', default=False, help="disable cuda training")
     parser.add_argument('--gpu-number', type=int, default=0, help="GPU device number")
     parser.add_argument('--num-train', type=int, default=500, help="number of training examples")
-    parser.add_argument('--num-val', type=int, default=100, help="number of validation examples")
+    parser.add_argument('--num-val', type=int, default=200, help="number of validation examples")
     parser.add_argument('--num-test', type=int, default=500, help="number of test examples")
 
     # scheduler
     parser.add_argument('--use-scheduler', action='store_true', default=False, help='use lr scheduler')
     parser.add_argument('--scheduler-type', type=str, default="plateau", help="scheduler type")
-    parser.add_argument('--patience', type=int, default=2500, help="patience for scheduler")
+    parser.add_argument('--patience', type=int, default=2000, help="patience for scheduler")
     parser.add_argument('--factor', type=float, default=.8, help="factor for scheduler")
 
     # optimizer
     parser.add_argument('--use-tqdm', action='store_true', default=False, help="disable tqdm for training")
     parser.add_argument('--lr', type=float, default=1e-3, help="learning rate")
-    parser.add_argument('--epochs', type=int, default=100000, help="number of epochs")
-    parser.add_argument('--batch-size', type=int, default=100, help="batch size")
+    parser.add_argument('--epochs', type=int, default=50000, help="number of epochs")
+    parser.add_argument('--batch-size', type=int, default=500, help="batch size")
     parser.add_argument('--test-every', type=int, default=1000, help="test and log every * steps")
 
     # NNs

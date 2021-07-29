@@ -62,7 +62,7 @@ def get(identifier):
             "tanh": nn.Tanh(),
             "sin": sin_act(),
             "linear": linear_act(),
-            "silu": nn.SiLU(),
+           # "silu": nn.SiLU(),    # not in pytorch=1.4.0
             "mish": mish(),
             "gelu-fast": gelu_fast(),
             "gelu-new": gelu_new(),
