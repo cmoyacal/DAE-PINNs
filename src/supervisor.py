@@ -107,8 +107,8 @@ class supervisor(object):
         display.training_display.summary(self.state)
 
         # save model ### check if this is not overwriting saving the BEST model
-        if model_save_path is not None:
-            self.save(model_save_path, verbose=1)
+        #if model_save_path is not None:
+        #    self.save(model_save_path, verbose=1)
         return self.loss_history, self.state
 
     def _train(self, epochs, test_every, use_tqdm):
@@ -237,7 +237,7 @@ class supervisor(object):
         self.events.on_predict_completed()
         return y_pred
 
-    @timing
+    # @timing
     def integrate(self, X0, N=1, dyn_state_dim=4, model_restore_path=None):
         """
         Integrates the power network dynamics for N time steps
@@ -246,7 +246,7 @@ class supervisor(object):
         Returns:
             :y_pred (numpy.array): \in [1, dyn_state_dim + alg_state_dim]
         """
-        print("integrating with DAE-PINNs...")
+        #print("integrating with DAE-PINNs...")
         yn = X0
         soln = []
         for _ in range(N):
