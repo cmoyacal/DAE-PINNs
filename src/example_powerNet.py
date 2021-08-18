@@ -188,6 +188,9 @@ def main(args):
     chcker = events.ModelCheckPoint(save_path, save_better_only=True, every=1000) 
     restore_path = save_path if args.start_from_best else None
 
+    if args.start_from_best:
+        print("starting from best model so far...")
+
     loss_history, state = super.train(
         epochs=args.epochs,
         batch_size=args.batch_size, 

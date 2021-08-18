@@ -2,6 +2,7 @@ import argparse
 import numpy as np
 import os
 import torch
+from tqdm import tqdm
 
 import deepxde as dde
 from matplotlib.pyplot import plot
@@ -122,7 +123,7 @@ def main(args):
     algebraic = dotdict()
     algebraic.num_IRK_stages = args.num_IRK_stages
     dim_out_alg = algebraic.num_IRK_stages + 1
-    algebraic.layer_size = [dynamic.state_dim] + [100] * 2 + [dim_out_alg]
+    algebraic.layer_size = [dynamic.state_dim] + [40] * 2 + [dim_out_alg]
     algebraic.activation = "sin"
     algebraic.initializer = "Glorot normal"
     algebraic.dropout_rate = 0.0
@@ -155,7 +156,7 @@ def main(args):
     print("size of dataset...", X_test.shape)
     l2_rel_errors = np.empty((args.num_eval, 5))
     l2_rel_errors_vs_N_alg = np.empty((args.num_eval, N+1))
-    for k in range(args.num_eval):
+    for k in tqdm(range(args.num_eval)):
         X0 = X_test[k]
         X0_npy = np.array(X0)
         # predict
@@ -168,7 +169,7 @@ def main(args):
         # collect errors vs N for the algebraic variable
         for n in range(1, N+1):
             y_pred_n = super.integrate(X0_npy, N=n, dyn_state_dim=4, model_restore_path=restore_path)
-            _, y_eval_n = scipy_integrate(power_net_dae_plot, X0, args, super.data.IRK_times, N=k)
+            _, y_eval_n = scipy_integrate(power_net_dae_plot, X0, args, super.data.IRK_times, N=n)
             l2_rel_errors_vs_N_alg[k, n-1] = l2_relative_error(y_pred_n[-1,...], y_eval_n[-1,...]) 
         del y_pred, y_eval, y_pred_n, y_eval_n
 

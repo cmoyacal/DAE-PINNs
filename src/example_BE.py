@@ -90,7 +90,8 @@ def main(args):
         os.makedirs(args.log_dir, exist_ok=True)
 
     # enabling gpu training
-    use_cuda = not args.no_cuda and torch.cuda.is_available()
+    #use_cuda = not args.no_cuda and torch.cuda.is_available()
+    use_cuda = True
     device = torch.device("cuda" if use_cuda else "cpu")
     print("using...", device)
     if use_cuda:
@@ -111,7 +112,7 @@ def main(args):
     dynamic.layer_normalization = None
     dynamic.type = "attention"
     dim_out = dynamic.state_dim 
-    dynamic.layer_size = [dynamic.state_dim] + [100] * 5 + [dim_out]
+    dynamic.layer_size = [dynamic.state_dim] + [100] * 2 + [dim_out]
     dynamic.num_IRK_stages = 0
     
     algebraic = dotdict()
@@ -134,10 +135,10 @@ def main(args):
     # Data for training
     geom = dde.geometry.Hypercube([-.5, -.5, -.5, -.5],[.5, .5, .5, .5])
     np.random.seed(1234)
-    num_train = 2000
+    num_train = 4000
     X_train = geom.random_points(num_train)
     np.random.seed(3456)
-    num_test = 1000
+    num_test = 500
     X_test = geom.random_points(num_test)
     data = dae_data_other(X_train, X_test, args, device=device, func=power_net_dae)
 
@@ -149,7 +150,7 @@ def main(args):
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
                 optimizer,
                 'min',
-                patience=1000,
+                patience=2000,
                 verbose=True,
                 factor=0.8,
             )

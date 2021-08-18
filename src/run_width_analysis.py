@@ -28,7 +28,7 @@ def main(args):
     print("using...", device)
 
     # list of widths
-    width = [10, 50, 100, 200, 500, 1000]
+    width = [20, 40, 100, 200, 500, 1000]
     train_width = np.empty((len(width),))
     test_width = np.empty((len(width),))
 
@@ -110,7 +110,7 @@ def main(args):
         algebraic = dotdict()
         algebraic.num_IRK_stages = args.num_IRK_stages
         dim_out_alg = algebraic.num_IRK_stages + 1
-        algebraic.layer_size = [dynamic.state_dim] + [width[k]] * args.alg_depth + [dim_out_alg]
+        algebraic.layer_size = [dynamic.state_dim] + [int(width[k]/4)] * args.alg_depth + [dim_out_alg]
         algebraic.activation = args.alg_activation
         algebraic.initializer = "Glorot normal"
         algebraic.dropout_rate = 0.0

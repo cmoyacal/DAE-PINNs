@@ -29,7 +29,7 @@ def main(args):
     print(torch.cuda.current_device())
 
     # list of depths
-    depth = [2, 5, 7]
+    depth = [1, 2, 4, 6, 8, 10]
     train_depth = np.empty((len(depth),))
     test_depth = np.empty((len(depth),))
 
@@ -79,7 +79,7 @@ def main(args):
         return [f0, f1, f2, f3], [g]
 
     # get data for the problem
-    geom = dde.geometry.Hypercube([-.25, -.25, -.25, -.25],[.25, .25, .25, .25])
+    geom = dde.geometry.Hypercube([-.5, -.5, -.5, -.5],[.5, .5, .5, .5])
 
     def alg_output_feature_layer(x):
         return torch.nn.functional.softplus(x)

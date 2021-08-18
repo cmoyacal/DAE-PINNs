@@ -132,7 +132,7 @@ def main(args):
     dynamic.layer_normalization = None
     dynamic.type = "attention"
     dim_out = dynamic.state_dim * (dynamic.num_IRK_stages + 1)
-    dynamic.layer_size = [dynamic.state_dim] + [100] * 5 + [dim_out]
+    dynamic.layer_size = [dynamic.state_dim] + [100] * 4 + [dim_out]
     
     algebraic = dotdict()
     algebraic.num_IRK_stages = num_IRK_stages
@@ -155,10 +155,10 @@ def main(args):
     # Data for training
     geom = dde.geometry.Hypercube([-.5, -.5, -.5, -.5],[.5, .5, .5, .5])
     np.random.seed(1234)
-    num_train = 2000
+    num_train = 4000
     X_train = geom.random_points(num_train)
     np.random.seed(3456)
-    num_test = 1000
+    num_test = 500
     X_test = geom.random_points(num_test)
     data = dae_data_RK(X_train, X_test, args, RK=args.RK, device=device, func=power_net_dae)
 
@@ -170,7 +170,7 @@ def main(args):
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
                 optimizer,
                 'min',
-                patience=1000,
+                patience=3000,
                 verbose=True,
                 factor=0.8,
             )
@@ -250,7 +250,7 @@ def main(args):
     plot_regression(y_pred[-2,...], y_eval[-2,...], fname=os.path.join(args.log_dir, 'regression-voltage.png'), size=20, figsize=(8,6), x_line=x_line, y_line=y_line)
 
     # saving data for future use
-    np.savez(os.path.join(args.log_dir, "prediction-data"), y_pred=y_pred, y_eval=y_eval, time=t)
+    np.savez(os.path.join(args.log_dir, "prediction-data-Gauss_Legendre"), y_pred=y_pred, y_eval=y_eval, time=t)
 
 
 
